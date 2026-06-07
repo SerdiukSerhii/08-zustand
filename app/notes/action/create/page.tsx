@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
-import CreateNote from './CreateNote';
+import NoteForm from '@/components/NoteForm/NoteForm';
+import css from './CreateNote.module.css';
 
 export const metadata: Metadata = {
   title: 'Create Note',
@@ -20,8 +21,15 @@ export const metadata: Metadata = {
   },
 };
 
-const CreateNotePage = () => {
-  return <CreateNote />;
+const CreateNote = () => {
+  return (
+    <section>
+      <div className={css.container}>
+        <h1 className={css.title}>Create note</h1>
+        <NoteForm />
+      </div>
+    </section>
+  );
 };
 
-export default CreateNotePage;
+export default CreateNote;
