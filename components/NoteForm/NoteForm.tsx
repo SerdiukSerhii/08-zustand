@@ -4,22 +4,36 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createNote } from '@/lib/api';
 import type { NewNoteBody, NoteTag } from '@/types/note';
 import { useRouter } from 'next/navigation';
+import { useNoteDraftStore } from '@/lib/store/noteStore';
+
 import css from './NoteForm.module.css';
 
 const NoteForm = () => {
   const queryClient = useQueryClient();
   const router = useRouter();
 
+  const { draft, setDraft, clearDraft } = useNoteDraftStore();
+
+  const handleChange = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setDraft({
+      ...draft,
+      [event.target.name]: event.target.value,
+    });
+  };
+
   const { mutate, isPending } = useMutation({
     mutationFn: createNote,
 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
-      router.push('/notes/filter/all');
+      clearDraft();
+      router.back();
     },
   });
 
-  async function handleSubmit(formData: FormData) {
+  const handleSubmit = (formData: FormData) => {
     const note: NewNoteBody = {
       title: formData.get('title') as string,
       content: formData.get('content') as string,
@@ -27,7 +41,9 @@ const NoteForm = () => {
     };
 
     mutate(note);
-  }
+  };
+
+  const handleCancel = () => router.back();
 
   return (
     <form
@@ -41,6 +57,8 @@ const NoteForm = () => {
           name="title"
           type="text"
           className={css.input}
+          value={draft.title}
+          onChange={handleChange}
           required
           minLength={3}
           maxLength={50}
@@ -52,8 +70,10 @@ const NoteForm = () => {
         <textarea
           id="content"
           name="content"
-          rows={8}
           className={css.textarea}
+          value={draft.content}
+          onChange={handleChange}
+          rows={8}
           maxLength={500}
         />
       </div>
@@ -64,6 +84,8 @@ const NoteForm = () => {
           id="tag"
           name="tag"
           className={css.select}
+          value={draft.tag}
+          onChange={handleChange}
           required
         >
           <option value="Todo">Todo</option>
@@ -78,7 +100,7 @@ const NoteForm = () => {
         <button
           type="button"
           className={css.cancelButton}
-          onClick={() => router.push('/notes/filter/all')}
+          onClick={handleCancel}
         >
           Cancel
         </button>
